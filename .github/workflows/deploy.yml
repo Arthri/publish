@@ -55,11 +55,11 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         id: setup-dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
 
       - name: Setup Environment
         env:
@@ -115,7 +115,7 @@ jobs:
         run: dotnet pack -warnaserror -c Release -p:EXPOSE_CI_VARIABLES=true ${{ inputs.project-path }}
 
       - name: Upload Output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: NuGet Packages
           path: |
