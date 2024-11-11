@@ -147,7 +147,7 @@ jobs:
               continue
             fi
 
-            DATA_ENTRY=($project)
+            DATA_ENTRY=(${project%$'\r'})
             if [[ -n $FILENAME_TEMPLATE ]] ; then
               export PROJECT_NAME="$(base64 -d - <<< "${DATA_ENTRY[0]}")"
               export PROJECT_VERSION="$(base64 -d - <<< "${DATA_ENTRY[2]}")"
