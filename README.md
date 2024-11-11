@@ -39,7 +39,7 @@ jobs:
   publish-nuget:
     uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
     secrets:
-      NUGET-API-KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 ```
 
 To do both, combine the `jobs` key as follows,
@@ -60,7 +60,7 @@ jobs:
   publish-nuget:
     uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
     secrets:
-      NUGET-API-KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 ```
 
 ## Common Input Parameters
@@ -168,7 +168,7 @@ The workflow assumes that it is triggered by a release event. If that is not the
 ## NuGet
 
 ### Installation
-The workflow requires an environment named `NuGet (Stable)` with a secret named `NUGET-API-KEY` containing the API key used to publish packages to NuGet. The following is a list of steps to create the environment.
+The workflow requires an environment named `NuGet (Stable)` with a secret named `NUGET_API_KEY` containing the API key used to publish packages to NuGet. The following is a list of steps to create the environment.
 
 > [!NOTE]
 > Environments are not, as of writing (November 11, 2024), available on private repositories under the free plan. https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment
@@ -177,7 +177,7 @@ The workflow requires an environment named `NuGet (Stable)` with a secret named 
 1. Navigate to `Environments` under the `Code and automation` section.
 1. Create a new environment named `NuGet (Stable)`.
 1. Obtain a NuGet API key.
-1. Add a secret named `NUGET-API-KEY` containing the NuGet API key.
+1. Add a secret named `NUGET_API_KEY` containing the NuGet API key.
 1. Configure environment as appropriate.
 
 ### Set Release Notes or Changelog

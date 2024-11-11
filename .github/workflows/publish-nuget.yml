@@ -40,7 +40,7 @@ on:
         required: false
         type: string
     secrets:
-      NUGET-API-KEY:
+      NUGET_API_KEY:
         description: The API key used to publish the package to NuGet.
         required: true
 
@@ -138,7 +138,7 @@ jobs:
 
       - name: Publish Package
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET-API-KEY }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
           PACKAGE_OUTPUT_PATH: ${{ steps.build.outputs.package-output-path }}
         run: |
           shopt -s nullglob
