@@ -2,7 +2,7 @@
 Reusable workflows for publishing to various targets.
 
 > [!IMPORTANT]
-> The workflows only support publishing one project per run. Attempted to publish multiple projects simultaneously may lead to corrupted releases.
+> The workflows only support publishing one project per run. Attempting to publish multiple projects simultaneously may lead to corrupted releases.
 
 ## Installation
 > [!NOTE]
