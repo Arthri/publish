@@ -66,6 +66,9 @@ jobs:
 ## Common Input Parameters
 Parameters available on all or most workflows provided by the repository.
 
+### Machine
+The workflows, by default, run on Ubuntu (22.04 as of writing). The machine that the workflows run on can be changed by using the `runs-on` input parameter.
+
 ### Specify Project
 The workflows, by default, builds the singular solution or project at the root of the repository. If there are multiple solutions and/or projects at the root of the repository, a solution or a project must be specified explicitly using the `project-path` input parameter.
 ```yml

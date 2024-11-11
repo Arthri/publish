@@ -4,6 +4,11 @@ run-name: Publish / GitHub Release
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: ubuntu-22.04
+        description: The machine to run the jobs on.
+        required: false
+        type: string
       project-path:
         default: ""
         description: The path of the project to build and pack. If not specified, the solution or the project in the root of the repository is used instead.
@@ -52,7 +57,7 @@ env:
 
 jobs:
   publish-release:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 2
     permissions:
       contents: write

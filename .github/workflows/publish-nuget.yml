@@ -4,6 +4,11 @@ run-name: Publish / NuGet
 on:
   workflow_call:
     inputs:
+      runs-on:
+        default: ubuntu-22.04
+        description: The machine to run the jobs on.
+        required: false
+        type: string
       changelog:
         default: ""
         description: A list of changes introduced in the new version of the package.
@@ -55,7 +60,7 @@ jobs:
       name: ${{ inputs.environment-name }}
       url: ${{ steps.build.outputs.package-version-url }}
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 2
 
     steps:
