@@ -21,7 +21,7 @@ on:
 
 jobs:
   publish-release:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v2
     permissions:
       contents: write
 ```
@@ -37,7 +37,7 @@ on:
 
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     secrets:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 ```
@@ -53,12 +53,12 @@ on:
 
 jobs:
   publish-release:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v2
     permissions:
       contents: write
 
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     secrets:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 ```
@@ -74,7 +74,7 @@ The workflows, by default, builds the singular solution or project at the root o
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       project-path: ./src/Test.App/Test.App.csproj
 ```
@@ -84,7 +84,7 @@ By default, the project is built using the version defined in the project file. 
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       version: v1.0.0
 
@@ -97,7 +97,7 @@ If a version is specified explicitly, then it will be sanitized to remove the `v
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       sanitize-version: false
 ```
@@ -106,7 +106,7 @@ jobs:
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       build-arguments: -p:PublishAot=true
 ```
@@ -119,7 +119,7 @@ If no project is specified, then all projects' outputs are uploaded. To upload o
 ```yml
 jobs:
   publish-release:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v2
     permissions:
       contents: write
     with:
@@ -142,7 +142,7 @@ The default name of the archive uploaded to GitHub Releases is `release`, and th
 ```yml
 jobs:
   publish-release:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-release.yml@v2
     permissions:
       contents: write
     with:
@@ -185,7 +185,7 @@ NuGet supports release notes (for example, on [Belp.Build.Packinf@0.6.0](https:/
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       changelog: |
         - Added this
@@ -196,7 +196,7 @@ Optionally, to source the release notes from the GitHub release,
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       changelog: ${{ github.event.release.body }}
 ```
@@ -206,7 +206,7 @@ The workflow acquires the NuGet API key from an environment named `NuGet (Stable
 ```yml
 jobs:
   publish-nuget:
-    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v1
+    uses: Arthri/publish-dotnet/.github/workflows/publish-nuget.yml@v2
     with:
       environment-name: Custom Environment Name
 ```
