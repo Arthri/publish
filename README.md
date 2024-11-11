@@ -20,6 +20,8 @@ on:
 jobs:
   publish-release:
     uses: Arthri/publish/.github/workflows/publish-release.yml@v1
+    permissions:
+      contents: write
 ```
 
 To push a NuGet package when GitHub releases are published, add a new workflow under `.github/workflows/` with the following contents,
@@ -50,6 +52,8 @@ on:
 jobs:
   publish-release:
     uses: Arthri/publish/.github/workflows/publish-release.yml@v1
+    permissions:
+      contents: write
 
   publish-nuget:
     uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
@@ -111,6 +115,8 @@ If no project is specified, then all projects' outputs are uploaded. To upload o
 jobs:
   publish-release:
     uses: Arthri/publish/.github/workflows/publish-release.yml@v1
+    permissions:
+      contents: write
     with:
       # Upload all projects.
       project-filter: *
@@ -132,6 +138,8 @@ The default name of the archive uploaded to GitHub Releases is `release`, and th
 jobs:
   publish-release:
     uses: Arthri/publish/.github/workflows/publish-release.yml@v1
+    permissions:
+      contents: write
     with:
       # Sets the archive's name to archive.tar.gz.
       filename-template: archive
