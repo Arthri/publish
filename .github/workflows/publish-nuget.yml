@@ -119,7 +119,7 @@ jobs:
 
           echo 'Targets written to '"$BUILD_TARGETS_PATH"'.'
 
-      - name: Build & Pack Project
+      - name: Build Project
         env:
           # These must match the names of the MSBuild properties they refer to.
           PackageReleaseNotes: ${{ inputs.changelog }}
