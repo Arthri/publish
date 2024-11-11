@@ -11,7 +11,7 @@ on:
         type: string
       environment-name:
         default: "NuGet (Stable)"
-        description: The name of the environment that corresponding to the deployment.
+        description: The name of the environment corresponding to the deployment.
         required: false
         type: string
       project-path:
