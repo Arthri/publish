@@ -68,6 +68,7 @@ jobs:
 
       - name: Setup Environment
         env:
+          DOTNET_VERSION: ${{ steps.setup-dotnet.outputs.dotnet-version }}
           PROJECT_VERSION: ${{ inputs.version }}
           SANITIZE_VERSION: ${{ inputs.sanitize-version }}
         run: |
@@ -82,7 +83,7 @@ jobs:
 
           # Verify that the correct directory has been found by
           # testing for the existence of MSBuild.dll
-          msbuild_dir="$(dirname "$(which dotnet)")/sdk/${{ steps.setup-dotnet.outputs.dotnet-version }}/"
+          msbuild_dir="$(dirname "$(which dotnet)")/sdk/$DOTNET_VERSION/"
           msbuild_path="${msbuild_dir}MSBuild.dll"
           if [[ ! -f $msbuild_path ]]; then
             echo "Unable to find MSBuild.dll"
