@@ -1,83 +1,95 @@
-# deploy-nuget
-A reusable workflow for deploying to NuGet.
+# Publish
+Reusable workflows for publishing to various targets.
 
 ## Installation
 1. Add a new workflow under `.github/workflows/` with the following contents.
     ```yml
-    name: Deploy
+    name: Publish
 
     on:
-      push:
-        branches:
-          - release/nuget
+      release:
+        types:
+          - published
 
     jobs:
-      deploy:
-        uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
+      publish-nuget:
+        uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
         secrets:
           NUGET-API-KEY: ${{ secrets.NUGET_API_KEY }}
     ```
-2. Create a new environment named `NuGet (Stable)` with a secret named `NUGET-API-KEY` containing the API key used to publish packages to NuGet.
+1. Create a new environment named `NuGet (Stable)` with a secret named `NUGET-API-KEY` containing the API key used to publish packages to NuGet.
+  1. Go to the repository's settings tab.
+  1. Navigate to `Environments` under the `Code and automation` section.
+  1. Create a new environment named `NuGet (Stable)`.
+  1. Obtain a NuGet API key.
+  1. Add a secret named `NUGET-API-KEY` containing the NuGet API key.
+  1. Configure environment as appropriate.
 
 ## Usage
-1. Create a pull request from `master` to `release/nuget`.
-1. Merge pull request.
-1. Expect workflow to build project and upload NuGet package to NuGet.
-
-### Creating the NuGet Environment
-1. Head to your repository's settings tab.
-1. Go to `Code and automation > Environments`.
-1. Create a new environment named `NuGet (Stable)`.
-1. Configure environment.
-1. Add a secret named `NUGET-API-KEY`
+1. Create and publish a GitHub release
+1. Wait for the workflow to create and push the NuGet package.
 
 ### Set Release Notes or Changelog
+NuGet supports release notes (for example, [Belp.Build.Packinf@0.6.0](https://www.nuget.org/packages/Belp.Build.Packinf/0.6.0#releasenotes-body-tab)), a tab dedicated to the changes introduced in a given version. By default, the NuGet publish workflow doesn't build packages with release notes, but it can be configured to.
+
 ```yml
 jobs:
-  deploy:
-    uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
     with:
       changelog: |
         - Added this
         - Removed that
 ```
 
-### Specify Environment Name
-By default, the workflow acquires `NUGET-API-KEY` from an environment named `NuGet (Stable)`. The environment name can be changed using the `environment-name` parameter.
+Optionally, to source the release notes from the GitHub release,
+
 ```yml
 jobs:
-  deploy:
-    uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
+    with:
+      changelog: ${{ github.event.release.body }}
+```
+
+### Change Environment Name
+The workflow acquires the NuGet API key from an environment named `NuGet (Stable)`, by default. The environment name can be changed using the `environment-name` input parameter.
+```yml
+jobs:
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
     with:
       environment-name: Custom Environment Name
 ```
 
 ### Specify Project
-By default, the workflow builds the singular solution or csproj in the repository's root. If there is more than one solution or project in the root, a project must be specified manually using the `project-path` parameter.
+The workflow, by default, builds the singular solution or project at the root of the repository. If there are multiple solutions and/or projects at the root of the repository, a project must be specified explicitly using the `project-path` input parameter.
 ```yml
 jobs:
-  deploy:
-    uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
     with:
       project-path: ./src/Test.App/Test.App.csproj
 ```
 
-### Disable Version Sanitization
-By default, the inputted version will be sanitized to remove the `v` prefix and any directories. For example, `a/b/c/v1.0.0` will turn into `1.0.0`, and `v1.2.3` will turn into `1.2.3`. Sanitization is configurable. The following example demonstrates disabling version sanitization.
-```yml
-jobs:
-  deploy:
-    uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
-    with:
-      sanitize-version: false
-```
-
 ### Set Version
-By default, the package's version will be set to the `$(Version)` property of a project. It can be overridden using configuration options.
+By default, the package builds with the version specified in the project. A different version can be set by using the `version` input parameter.
 ```yml
 jobs:
-  deploy:
-    uses: Arthri/deploy-nuget/.github/workflows/deploy.yml@v1
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
     with:
       version: v1.0.0
+      # Alternatively, use the tag of the release.
+      # version: ${{ github.event.release.tag_name }}
+```
+
+### Disable Version Sanitization
+If a version is specified explicitly, then it will be sanitized to remove the `v` prefix and any directories. For example, `a/b/c/v1.0.0` becomes `1.0.0`, and `v1.2.3` becomes `1.2.3`. To disable version sanitization, set the `sanitize-version` input parameter to `false`
+```yml
+jobs:
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
+    with:
+      sanitize-version: false
 ```

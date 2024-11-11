@@ -1,0 +1,133 @@
+name: Publish / NuGet
+run-name: Publish / NuGet
+
+on:
+  workflow_call:
+    inputs:
+      changelog:
+        default: ""
+        description: A list of changes introduced in the new version of the package.
+        required: false
+        type: string
+      environment-name:
+        default: "NuGet (Stable)"
+        description: The name of the environment that corresponding to the deployment.
+        required: false
+        type: string
+      project-path:
+        default: ""
+        description: The path of the project to build and pack. If not specified, the solution or the project in the root of the repository is used instead.
+        required: false
+        type: string
+      sanitize-version:
+        default: true
+        description: If true, sanitizes the inputted version by removing the `v` prefix and directories.
+        required: false
+        type: boolean
+      version:
+        default: ""
+        description: If specified, overrides the version specified in the project.
+        required: false
+        type: string
+    secrets:
+      NUGET-API-KEY:
+        description: The API key used to publish the package to NuGet.
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+  DOTNET_NOLOGO: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+
+jobs:
+  publish-nuget:
+    environment:
+      name: ${{ inputs.environment-name }}
+      url: ${{ steps.build.outputs.package-version-url }}
+
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        id: setup-dotnet
+        uses: actions/setup-dotnet@v4
+
+      - name: Setup Environment
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+          SANITIZE_VERSION: ${{ inputs.sanitize-version }}
+        run: |
+          if [[ $SANITIZE_VERSION == "true" ]] ; then
+            # Add Version as an environment variable so it's exposed to MSBuild.
+            # Environment variables are preferred over CLI parameters because
+            # the former doesn't allow the property to be changed within the project.
+            echo 'Version='"${PACKAGE_VERSION#**v}" >> "$GITHUB_ENV"
+          fi
+
+
+
+          # Verify that the correct directory has been found by
+          # testing for the existence of MSBuild.dll
+          msbuild_dir="$(dirname "$(which dotnet)")/sdk/${{ steps.setup-dotnet.outputs.dotnet-version }}/"
+          msbuild_path="${msbuild_dir}MSBuild.dll"
+          if [[ ! -f $msbuild_path ]]; then
+            echo "Unable to find MSBuild.dll"
+            exit 1
+          fi
+
+          echo 'MSBuild found at '"$msbuild_path"'.'
+
+
+
+          # Inject build targets
+          IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY="${msbuild_dir}Current/Microsoft.Common.targets/ImportBefore/"
+          mkdir -p "$IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY"
+
+          BUILD_TARGETS_PATH="${IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY}Publish.NuGet.Common.targets"
+
+          # Be careful about the indentation.
+          cat << 'EOF' > "$BUILD_TARGETS_PATH"
+          <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+          <!-- Outputs the package path for CI to use -->
+        
+          <!-- Expose variables for CI to use -->
+          <Target Name="_ExposeCIVariables" AfterTargets="Pack" Condition="'$(_ExposeOutputToCI)' == 'true'">
+            <Error Text="%24%28GITHUB_OUTPUT%29 is undefined" Condition="'$(GITHUB_OUTPUT)' == ''" />
+            <WriteLinesToFile File="$(GITHUB_OUTPUT)" Lines="package-output-path=$(PackageOutputAbsolutePath);package-version-url=https://www.nuget.org/packages/$(PackageId)/$(PackageVersion)" />
+          </Target>
+        
+          <!-- Prevent _ExposeOutputToCI from propagating to project references -->
+          <ItemGroup>
+            <ProjectReference Update="@(ProjectReference)" UndefineProperties="%(ProjectReference.UndefineProperties);_ExposeOutputToCI" />
+          </ItemGroup>
+
+          </Project>
+          EOF
+
+          echo 'Targets written to '"$BUILD_TARGETS_PATH"'.'
+
+      - name: Build & Pack Project
+        env:
+          # These must match the names of the MSBuild properties they refer to.
+          PackageReleaseNotes: ${{ inputs.changelog }}
+          Version: ${{ env.Version || inputs.version }}
+
+          PROJECT_PATH: ${{ inputs.project-path }}
+        id: build
+        run: dotnet pack -warnaserror -c Release -p:_ExposeOutputToCI=true "$PROJECT_PATH"
+
+      - name: Publish Package
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET-API-KEY }}
+          PACKAGE_OUTPUT_PATH: ${{ steps.build.outputs.package-output-path }}
+        run: dotnet nuget push "$PACKAGE_OUTPUT_PATH"*.nupkg -k "$NUGET_API_KEY" -s "https://api.nuget.org/v3/index.json"
