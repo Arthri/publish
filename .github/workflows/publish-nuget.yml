@@ -105,7 +105,7 @@ jobs:
 
           <!-- Outputs the package path for CI to use -->
         
-          <!-- Expose variables for CI to use -->
+          <!-- Expose data to CI -->
           <Target Name="_ExposeCIVariables" AfterTargets="Pack" Condition="'$(_ExposeOutputToCI)' == 'true'">
             <Error Text="%24(GITHUB_OUTPUT) is undefined" Condition="'$(GITHUB_OUTPUT)' == ''" />
             <WriteLinesToFile File="$(GITHUB_OUTPUT)" Lines="package-output-path=$(PackageOutputAbsolutePath);package-version-url=https://www.nuget.org/packages/$(PackageId)/$(PackageVersion)" />
