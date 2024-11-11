@@ -151,9 +151,8 @@ jobs:
               ARCHIVE_NAME="release"
             fi
             OUTPUT_PATH="$(base64 -d - <<< "${DATA_ENTRY[1]}")"
-            cd "$OUTPUT_PATH"
             ARCHIVE_PATH="$ARCHIVE_NAME.tar.gz"
-            tar -czf $ARCHIVE_PATH
+            tar -czf "$ARCHIVE_PATH" -C "$OUTPUT_PATH" .
 
             gh release upload "$RELEASE_TAG" "$ARCHIVE_PATH"
           done
