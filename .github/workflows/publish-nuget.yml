@@ -130,4 +130,11 @@ jobs:
         env:
           NUGET_API_KEY: ${{ secrets.NUGET-API-KEY }}
           PACKAGE_OUTPUT_PATH: ${{ steps.build.outputs.package-output-path }}
-        run: dotnet nuget push "$PACKAGE_OUTPUT_PATH"*.nupkg -k "$NUGET_API_KEY" -s "https://api.nuget.org/v3/index.json"
+        run: |
+          shopt -s nullglob
+          PACKAGES=("$PACKAGE_OUTPUT_PATH"*.nupkg)
+          if [[ ${#PACKAGES[@]} -gt 1 ]] ; then
+            echo The workflow only supports publishing one project per run.
+            exit 1
+          fi
+          dotnet nuget push "${PACKAGES[0]}" -k "$NUGET_API_KEY" -s "https://api.nuget.org/v3/index.json"

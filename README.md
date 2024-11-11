@@ -1,6 +1,9 @@
 # Publish
 Reusable workflows for publishing to various targets.
 
+> [!IMPORTANT]
+> The workflows only support publishing one project per run. Publishing multiple projects simultaneously may lead to corrupted releases.
+
 ## Installation
 1. Add a new workflow under `.github/workflows/` with the following contents.
     ```yml
