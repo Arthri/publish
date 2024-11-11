@@ -96,3 +96,12 @@ jobs:
     with:
       sanitize-version: false
 ```
+
+### Additional Build Arguments
+```yml
+jobs:
+  publish-nuget:
+    uses: Arthri/publish/.github/workflows/publish-nuget.yml@v1
+    with:
+      build-arguments: -p:PublishAot=true
+```

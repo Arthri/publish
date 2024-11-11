@@ -29,6 +29,11 @@ on:
         description: If specified, overrides the version specified in the project.
         required: false
         type: string
+      build-arguments:
+        default: ""
+        description: Optional arguments to pass to build.
+        required: false
+        type: string
     secrets:
       NUGET-API-KEY:
         description: The API key used to publish the package to NuGet.
@@ -123,8 +128,9 @@ jobs:
           Version: ${{ env.Version || inputs.version }}
 
           PROJECT_PATH: ${{ inputs.project-path }}
+          BUILD_ARGUMENTS: ${{ inputs.build-arguments }}
         id: build
-        run: dotnet pack -warnaserror -c Release -p:_ExposeOutputToCI=true "$PROJECT_PATH"
+        run: dotnet pack "$PROJECT_PATH" -warnaserror -c Release -p:_ExposeOutputToCI=true $BUILD_ARGUMENTS
 
       - name: Publish Package
         env:
