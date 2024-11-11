@@ -147,7 +147,7 @@ jobs:
             DATA_ENTRY=($project)
 
             export PROJECT_NAME="$(base64 -d - <<< "${DATA_ENTRY[0]}")"
-            if [[ -n $PROJECT_FILTER && PROJECT_NAME != $PROJECT_FILTER ]] ; then
+            if [[ -n $PROJECT_FILTER && $PROJECT_NAME != $PROJECT_FILTER ]] ; then
               continue
             fi
 
