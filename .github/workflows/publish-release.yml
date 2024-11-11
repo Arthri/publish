@@ -140,7 +140,7 @@ jobs:
             exit 1
           fi
 
-          mapfile projects < ./outputs.txt
+          mapfile -t projects < ./outputs.txt
           shopt -s nullglob dotglob
           for project in "${projects[@]}" ; do
             project="${project%$'\r'}"
