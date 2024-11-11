@@ -168,7 +168,7 @@ The workflow requires an environment named `NuGet (Stable)` with a secret named 
 1. Configure environment as appropriate.
 
 ### Set Release Notes or Changelog
-NuGet supports release notes (for example, on [Belp.Build.Packinf@0.6.0](https://www.nuget.org/packages/Belp.Build.Packinf/0.6.0#releasenotes-body-tab)), a tab dedicated to the changes introduced in a given version. By default, the NuGet publish workflow doesn't build packages with release notes, but it can be configured to.
+NuGet supports release notes (for example, on [Belp.Build.Packinf@0.6.0](https://www.nuget.org/packages/Belp.Build.Packinf/0.6.0#releasenotes-body-tab)), a tab dedicated to the changes introduced in a given version. By default, the workflow doesn't build packages with release notes, but it can be configured to.
 ```yml
 jobs:
   publish-nuget:
