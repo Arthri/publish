@@ -103,8 +103,6 @@ jobs:
           cat << 'EOF' > "$BUILD_TARGETS_PATH"
           <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-          <!-- Outputs the package path for CI to use -->
-        
           <!-- Expose data to CI -->
           <Target Name="_ExposeCIVariables" AfterTargets="Pack" Condition="'$(_ExposeOutputToCI)' == 'true'">
             <Error Text="%24(GITHUB_OUTPUT) is undefined" Condition="'$(GITHUB_OUTPUT)' == ''" />
