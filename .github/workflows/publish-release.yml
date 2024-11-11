@@ -143,13 +143,14 @@ jobs:
           mapfile projects < ./outputs.txt
           shopt -s nullglob dotglob
           for project in "${projects[@]}" ; do
-            if [[ -n $PROJECT_FILTER && project != $PROJECT_FILTER ]] ; then
+            DATA_ENTRY=(${project%$'\r'})
+
+            export PROJECT_NAME="$(base64 -d - <<< "${DATA_ENTRY[0]}")"
+            if [[ -n $PROJECT_FILTER && PROJECT_NAME != $PROJECT_FILTER ]] ; then
               continue
             fi
 
-            DATA_ENTRY=(${project%$'\r'})
             if [[ -n $FILENAME_TEMPLATE ]] ; then
-              export PROJECT_NAME="$(base64 -d - <<< "${DATA_ENTRY[0]}")"
               export PROJECT_VERSION="$(base64 -d - <<< "${DATA_ENTRY[2]}")"
               export PROJECT_INFORMATIONAL_VERSION="$(base64 -d - <<< "${DATA_ENTRY[3]}")"
               ARCHIVE_NAME="$(GH_TOKEN="" envsubst <<< "$FILENAME_TEMPLATE")"
