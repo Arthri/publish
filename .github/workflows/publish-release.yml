@@ -136,6 +136,7 @@ jobs:
           fi
 
           mapfile projects < ./outputs.txt
+          shopt -s nullglob dotglob
           for project in "${projects[@]}" ; do
             if [[ -n $PROJECT_FILTER && project != $PROJECT_FILTER ]] ; then
               continue
@@ -151,8 +152,8 @@ jobs:
               ARCHIVE_NAME="release"
             fi
             OUTPUT_PATH="$(base64 -d - <<< "${DATA_ENTRY[1]}")"
-            ARCHIVE_PATH="$ARCHIVE_NAME.tar.gz"
-            tar -czf "$ARCHIVE_PATH" -C "$OUTPUT_PATH" .
+            ARCHIVE_PATH="$PWD/$ARCHIVE_NAME.tar.gz"
+            (cd "$OUTPUT_PATH" && tar -czf "$ARCHIVE_PATH" *)
 
             gh release upload "$RELEASE_TAG" "$ARCHIVE_PATH"
           done
