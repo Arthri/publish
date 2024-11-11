@@ -8,6 +8,8 @@ Reusable workflows for publishing .NET projects to various targets.
 > [!NOTE]
 > Additional installation steps may be required for some workflows.
 
+All workflows require that a [global.json](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) file is present at the root of the repository.
+
 To upload built binaries to GitHub releases when they are published, add a new workflow under `.github/workflows/` with the following contents,
 ```yml
 name: Publish
