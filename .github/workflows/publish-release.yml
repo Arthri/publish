@@ -1,0 +1,158 @@
+name: Publish / GitHub Release
+run-name: Publish / GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        default: ""
+        description: The path of the project to build and pack. If not specified, the solution or the project in the root of the repository is used instead.
+        required: false
+        type: string
+      project-filter:
+        default: ""
+        description: A Bash pattern which determines the projects to be included in the release.
+        required: false
+        type: string
+      filename-template:
+        default: ""
+        description: A template which determines the name of the uploaded files.
+        required: false
+        type: string
+      sanitize-version:
+        default: true
+        description: If true, sanitizes the inputted version by removing the `v` prefix and directories.
+        required: false
+        type: boolean
+      version:
+        default: ""
+        description: If specified, overrides the version specified in the project.
+        required: false
+        type: string
+      build-arguments:
+        default: ""
+        description: Optional arguments to pass to build.
+        required: false
+        type: string
+      release-tag:
+        default: ""
+        description: The tag of the release to upload assets to. If not specified, the workflow will use `github.event.release.tag_name` instead.
+        required: false
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+  DOTNET_NOLOGO: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        id: setup-dotnet
+        uses: actions/setup-dotnet@v4
+
+      - name: Setup Environment
+        env:
+          PROJECT_VERSION: ${{ inputs.version }}
+          SANITIZE_VERSION: ${{ inputs.sanitize-version }}
+        run: |
+          if [[ $SANITIZE_VERSION == "true" ]] ; then
+            # Add Version as an environment variable so it's exposed to MSBuild.
+            # Environment variables are preferred over CLI parameters because
+            # the former doesn't allow the property to be changed within the project.
+            echo 'Version='"${PROJECT_VERSION#**v}" >> "$GITHUB_ENV"
+          fi
+
+
+
+          # Verify that the correct directory has been found by
+          # testing for the existence of MSBuild.dll
+          msbuild_dir="$(dirname "$(which dotnet)")/sdk/${{ steps.setup-dotnet.outputs.dotnet-version }}/"
+          msbuild_path="${msbuild_dir}MSBuild.dll"
+          if [[ ! -f $msbuild_path ]]; then
+            echo "Unable to find MSBuild.dll"
+            exit 1
+          fi
+
+          echo 'MSBuild found at '"$msbuild_path"'.'
+
+
+
+          # Inject build targets
+          IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY="${msbuild_dir}Current/Microsoft.Common.targets/ImportBefore/"
+          mkdir -p "$IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY"
+
+          BUILD_TARGETS_PATH="${IMPORTBEFORE__Microsoft_Common_targets__DIRECTORY}Publish.NuGet.Common.targets"
+
+          # Be careful about the indentation.
+          cat << 'EOF' > "$BUILD_TARGETS_PATH"
+          <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+          <!-- Expose data to CI -->
+          <Target Name="_ExposeCIVariables" AfterTargets="Publish">
+            <Error Text="%24(OUTPUT_DATA_PATH) is undefined" Condition="'$(OUTPUT_DATA_PATH)' == ''" />
+            <WriteLinesToFile File="$(OUTPUT_DATA_PATH)" Lines="$([MSBuild]::ConvertToBase64('$(MSBuildProjectName)')) $([MSBuild]::ConvertToBase64($([System.IO.Path]::GetFullPath('$(PublishDir)')))) $([MSBuild]::ConvertToBase64('$(Version)')) $([MSBuild]::ConvertToBase64('$(InformationalVersion)'))" />
+          </Target>
+
+          </Project>
+          EOF
+
+          echo 'Targets written to '"$BUILD_TARGETS_PATH"'.'
+
+      - name: Build Project
+        env:
+          # These must match the names of the MSBuild properties they refer to.
+          Version: ${{ env.Version || inputs.version }}
+
+          PROJECT_PATH: ${{ inputs.project-path }}
+          BUILD_ARGUMENTS: ${{ inputs.build-arguments }}
+        run: OUTPUT_DATA_PATH="$PWD/outputs.txt" dotnet publish "$PROJECT_PATH" -warnaserror -c Release -p:_ExposeOutputToCI=true $BUILD_ARGUMENTS
+
+      - name: Upload to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release-tag || github.event.release.tag_name }}
+          PROJECT_FILTER: ${{ inputs.project-filter }}
+          FILENAME_TEMPLATE: ${{ inputs.filename-template }}
+        run: |
+          if [[ -z $RELEASE_TAG ]] ; then
+            echo "Release tag not specified and not found."
+            exit 1
+          fi
+
+          mapfile projects < ./outputs.txt
+          for project in "${projects[@]}" ; do
+            if [[ -n $PROJECT_FILTER && project != $PROJECT_FILTER ]] ; then
+              continue
+            fi
+
+            DATA_ENTRY=($project)
+            if [[ -n $FILENAME_TEMPLATE ]] ; then
+              export PROJECT_NAME="$(base64 -d - <<< "${DATA_ENTRY[0]}")"
+              export PROJECT_VERSION="$(base64 -d - <<< "${DATA_ENTRY[2]}")"
+              export PROJECT_INFORMATIONAL_VERSION="$(base64 -d - <<< "${DATA_ENTRY[3]}")"
+              ARCHIVE_NAME="$(GH_TOKEN="" envsubst <<< "$FILENAME_TEMPLATE")"
+            else
+              ARCHIVE_NAME="release"
+            fi
+            OUTPUT_PATH="$(base64 -d - <<< "${DATA_ENTRY[1]}")"
+            cd "$OUTPUT_PATH"
+            ARCHIVE_PATH="$ARCHIVE_NAME.tar.gz"
+            tar -czf $ARCHIVE_PATH
+
+            gh release upload "$RELEASE_TAG" "$ARCHIVE_PATH"
+          done
