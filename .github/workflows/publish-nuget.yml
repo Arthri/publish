@@ -63,14 +63,14 @@ jobs:
 
       - name: Setup Environment
         env:
-          PACKAGE_VERSION: ${{ inputs.version }}
+          PROJECT_VERSION: ${{ inputs.version }}
           SANITIZE_VERSION: ${{ inputs.sanitize-version }}
         run: |
           if [[ $SANITIZE_VERSION == "true" ]] ; then
             # Add Version as an environment variable so it's exposed to MSBuild.
             # Environment variables are preferred over CLI parameters because
             # the former doesn't allow the property to be changed within the project.
-            echo 'Version='"${PACKAGE_VERSION#**v}" >> "$GITHUB_ENV"
+            echo 'Version='"${PROJECT_VERSION#**v}" >> "$GITHUB_ENV"
           fi
 
 
